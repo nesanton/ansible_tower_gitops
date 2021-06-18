@@ -15,7 +15,41 @@ The idea is to make your CI/CD tool run the [tower_configuration](https://github
 
 Then your `tower_objects.yml` may look as follows:
 
-```yaml:inventories/example_inventory/tower_objects.yml
+```yaml
+---
+tower_credentials:
+  - name: git
+    credential_type: Source Control
+    organization: Default
+    inputs:
+      username: ${GIT_USERNAME}
+      password: ${GIT_PASSWORD}
+    
+tower_projects:
+  - name: example_inventory_source_project
+    organization: Default
+    scm_clean: false
+    scm_delete_on_update: false
+    scm_update_on_launch: true
+    credential: gitlab_tower_dev
+    allow_override: false
+
+tower_inventory_sources:
+  - name: example_inventory_source
+    source: scm
+    source_path: inventory.ini
+    source_project: example_inventory_source_project
+    inventory: example_inventory
+    overwrite: true
+    overwrite_vars: true
+    update_on_launch: false
+    update_on_project_update: true
+
+tower_inventories:
+  - name: example_inventory
+    organization: Default
+    instance_groups: []
+...
 ```
 
 //TODO, continue
