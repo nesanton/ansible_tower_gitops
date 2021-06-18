@@ -2,7 +2,10 @@
 - hosts: localhost
   connection: local
   gather_facts: false
-  tasks:
+  collections:
+    - redhat_cop.tower_configuration
+    - ansible.tower
+  pre_tasks:
 
     - name: "Load tower objects from tower_objects.yml"
       include_vars:
@@ -14,107 +17,12 @@
         dir: "tower_objects.d"
       failed_when: false
 
-    #TODO replace the below tasks with tower_configuration collection
-
-    - name: "Ensure subscription"
-      awx.awx.tower_license:
-        manifest: "{{ subscription.manifest | default(omit) }}"
-        eula_accepted: "{{ subscription.eula_accepted | default(omit) }}"
-      when: 'subscription is defined'
-
-    - name: "Ensure Tower Settings"
-      awx.awx.tower_settings:
-        settings: "{{ item }}"
-      loop: "{{ settings | default([]) }}"
-
-    - name: "Ensure credentials"
-      awx.awx.tower_credential:
-        name: "{{ item.name | default(omit) }}"
-        description: "Created automatically via {{ lookup('env', 'PIPELINE_URL') | default('automated') }} pipeline"
-        organization: "{{ item.organization | default(omit) }}"
-        credential_type: "{{ item.credential_type | default(omit) }}"
-        inputs: "{{ item.inputs | default(omit) }}"
-        state: "{{ item.state | default(omit) }}"
-      loop: "{{ credentials | default([]) }}"
-
-    - name: "Ensure projects"
-      awx.awx.tower_project:
-        name: "{{ item.name | default(omit) }}"
-        description: "Created automatically via {{ lookup('env', 'PIPELINE_URL') | default('automated') }} pipeline"
-        organization: "{{ item.organization | default(omit) }}"
-        scm_clean: "{{ item.scm_clean | default(omit) }}"
-        scm_type: git
-        scm_delete_on_update: "{{ item.scm_delete_on_update | default(omit) }}"
-        scm_update_on_launch: "{{ item.scm_update_on_launch | default(omit) }}"
-        allow_override: "{{ item.allow_override | default(omit) }}"
-        scm_branch: "{{ lookup('env', 'SCM_BRANCH') | default(omit) }}"
-        scm_url: "{{ lookup('env', 'SCM_URL') | default(omit) }}"
-        credential: "{{ item.credential | default(omit) }}"
-        state: "{{ item.state | default(omit) }}"
-      loop: "{{ projects | default([]) }}"
-      notify:
-        - sync projects
-
-    - name: "Ensure inventories"
-      awx.awx.tower_inventory:
-        name: "{{ item.name | default(omit) }}"
-        description: "Created automatically via {{ lookup('env', 'PIPELINE_URL') | default('automated') }} pipeline"
-        organization: "{{ item.organization | default(omit) }}"
-        # instance_groups: <- still missing in the module
-        state: "{{ item.state | default(omit) }}"
-      loop: "{{ inventories | default([]) }}"
-
-    - name: "Ensure inventory sources"
-      awx.awx.tower_inventory_source:
-        name: "{{ item.name | default(omit) }}"
-        description: "Created automatically via {{ lookup('env', 'PIPELINE_URL') | default('automated') }} pipeline"
-        source: "{{ item.source | default(omit) }}"
-        source_path: "{{ item.source_path | default(omit) }}"
-        source_project: "{{ item.source_project | default(omit) }}"
-        inventory: "{{ item.inventory | default(omit) }}"
-        overwrite: "{{ item.overwrite | default(omit) }}"
-        overwrite_vars: "{{ item.overwrite_vars | default(omit) }}"
-        update_on_launch: "{{ item.update_on_launch | default(omit) }}"
-        update_on_project_update: "{{ item.update_on_project_update | default(omit) }}"
-        state: "{{ item.state | default(omit) }}"
-      loop: "{{ inventory_sources | default([]) }}"
-      notify:
-        - sync projects          # enough if "UPDATE_ON_PROJECT_UPDATE: true"
-        - sync inventory sources # in case if "UPDATE_ON_PROJECT_UPDATE: false"
-
-    - name: "Ensure Job Templates"
-      awx.awx.tower_job_template:
-        name: "{{ item.name | default(omit) }}"
-        description: "Created automatically via {{ lookup('env', 'PIPELINE_URL') | default('automated') }} pipeline"
-        organization: "{{ item.organization | default(omit) }}"
-        job_type: "{{ item.job_type | default(omit) }}"
-        inventory: "{{ item.inventory | default(omit) }}"
-        project: "{{ item.project | default(omit) }}"
-        playbook: "{{ item.playbook | default(omit) }}"
-        credentials: "{{ item.credentials | default(omit) }}"
-        state: "{{ item.state | default(omit) }}"
-        survey_enabled: "{{ item.survey_enabled | default(omit) }}"
-        survey_spec: "{{ item.survey_spec | default(omit) }}"
-      loop: "{{ job_templates | default([]) }}"
-
-  handlers:
-    - name: sync projects
-      awx.awx.tower_project_update:
-        name: "{{ item.name | default(omit) }}"
-        organization: "{{ item.organization | default(omit) }}"
-        wait: "{{ update_settings.wait | default(omit) }}"
-        interval: "{{ update_settings.interval | default(omit) }}"
-        timeout: "{{ update_settings.timeout | default(omit) }}"
-      loop: "{{ projects | default([]) }}"
-
-    - name: sync inventory sources
-      awx.awx.tower_inventory_source_update:
-        name: "{{ item.name | default(omit) }}"
-        organization: "{{ item.organization | default(omit) }}"
-        inventory: "{{ item.inventory | default(omit) }}"
-        inventory_source: "{{ item.inventory_source | default(omit) }}"
-        wait: "{{ update_settings.wait | default(omit) }}"
-        interval: "{{ update_settings.interval | default(omit) }}"
-        timeout: "{{ update_settings.timeout | default(omit) }}"
-      loop: "{{ inventory_sources | default([]) }}"
+  roles:
+    - credentials
+    - projects
+    - inventory_sources
+    - inventories
+    - job_templates
+    - workflow_job_templates
+    # etc.
 ...

@@ -1,5 +1,5 @@
 ensure_tower_objects:
-  image: quay.io/anestero/ci-ansible:v0.3
+  image: quay.io/anestero/cicd-ansible:v0.1
   variables:
     HELPERS_REVISION: main
     HELPERS_REPO: github.com/nesanton/ansible_tower_gitops.git
