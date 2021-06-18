@@ -11,11 +11,8 @@ ensure_tower_objects:
     - mv helpers/* ./ && rm -rf helpers
     - mkdir ~/.ssh
     - chmod 700 ~/.ssh
-    # Inject secrets
+    # Inject secrets from GitLab CI/CD vars
     - cat tower_objects.yml | envsubst > tower_objects.tmp && mv tower_objects.tmp tower_objects.yml
-    - export PIPELINE_URL=${CI_PIPELINE_URL}
-    - export SCM_URL=${CI_REPOSITORY_URL}
-    - export SCM_BRANCH=${CI_COMMIT_BRANCH}
   script:
     - ansible-playbook ensure_tower_objects.yml
 

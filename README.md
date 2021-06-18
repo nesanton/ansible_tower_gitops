@@ -13,7 +13,7 @@ The idea is to make your CI/CD tool run the [tower_configuration](https://github
 * `inventory source project` pointing to an SCM repo
 * `credential` to authenticate against the SCM repo
 
-Then your `tower_objects.yml` may look as follows:
+Then your [tower_objects.yml](inventories/example_inventory/tower_objects.yml) may look as follows:
 
 ```yaml
 ---
@@ -52,10 +52,60 @@ tower_inventories:
 ...
 ```
 
-//TODO, continue
+Compliment it with a [.gitlab-ci.yml](inventories/example_inventory/.gitlab-ci.yml)
 
-See an example [.gitlab-ci.yml](inventories/example_inventory/.gitlab-ci.yml) file and corresponding [tower_objects.yml](inventories/example_inventory/tower_objects.yml) to get an idea how this will work in GitLab
+```yaml
+ensure_tower_objects:
+  image: quay.io/anestero/cicd-ansible:v0.1
+  variables:
+    HELPERS_REVISION: main
+    HELPERS_REPO: github.com/nesanton/ansible_tower_gitops.git
+    ANSIBLE_HOST_KEY_CHECKING: 'false'
+    ANSIBLE_FORCE_COLOR: 'true'
+  before_script:
+    - git clone https://${HELPERS_TOKEN}@${HELPERS_REPO} helpers
+    - cd helpers && git checkout ${HELPERS_REVISION} && cd ..
+    - mv helpers/* ./ && rm -rf helpers
+    - mkdir ~/.ssh
+    - chmod 700 ~/.ssh
+    # Inject secrets from GitLab CI/CD vars
+    - cat tower_objects.yml | envsubst > tower_objects.tmp && mv tower_objects.tmp tower_objects.yml
+  script:
+    - ansible-playbook ensure_tower_objects.yml
+```
 
-Commiting any change to such a repository will result in automated synchronization of every related object into Tower.
+and a container image made with [cicd_ansible.bash](cicd_ansible.bash)
 
-Another example could be a repository with playbook(s) that jenerate job_template(s) and workflow_templates(s) in tower automatically in a similar fasion.
+```bash
+#!/bin/env bash
+
+IMAGE=cicd-ansible
+VERSION=v0.1
+
+container=$(buildah from registry.access.redhat.com/ubi8:latest)
+buildah run ${container} -- dnf install git python3-pip jq hostname -y --setopt=install_weak_deps --setopt=tsflags=nodocs --setopt=override_install_langs=en_US.utf8
+buildah run ${container} -- dnf clean all 
+buildah run ${container} -- pip3 install --upgrade --no-cache-dir pip
+buildah run ${container} -- pip3 install --no-cache-dir ansible envsubst jmespath jsonlint yamllint ansible-lint yq netaddr
+buildah run ${container} -- ansible-galaxy collection install awx.awx
+buildah run ${container} -- ansible-galaxy collection install redhat_cop.tower_configuration
+buildah run ${container} -- useradd ansible -u 10001 -g 0
+buildah run ${container} -- chgrp 0 /home/ansible 
+buildah run ${container} -- chmod -R 0775 /home/ansible 
+
+buildah config --workingdir /home/ansible ${container}
+buildah config --user 10001:0 ${container}
+buildah config --cmd '/bin/bash' ${container} 
+
+buildah commit ${container} ${IMAGE}:${VERSION}
+
+
+# Container image that can lint and run ansible playbooks.
+#
+# Changelog:
+# v0.1
+# * initial version
+#
+```
+And you don't need to click in Tower interface in order to create and update these objects. Instead, committing any change to such a repository will result in automated synchronization of every related object into Tower.
+
