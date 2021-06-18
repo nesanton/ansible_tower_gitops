@@ -4,8 +4,26 @@
   gather_facts: false
   tasks:
 
-    - name: "Load tower objects"
-      include_vars: "tower_objects.yml"
+    - name: "Load tower objects from tower_objects.yml"
+      include_vars:
+        file: "tower_objects.yml"
+      failed_when: false
+
+    - name: "Load tower objects from tower_objects.d/*"
+      include_vars:
+        dir: "tower_objects.d"
+      failed_when: false
+
+    - name: "Ensure subscription"
+      awx.awx.tower_license:
+        manifest: "{{ subscription.manifest | default(omit) }}"
+        eula_accepted: "{{ subscription.eula_accepted | default(omit) }}"
+      when: 'subscription is defined'
+
+    - name: "Ensure Tower Settings"
+      awx.awx.tower_settings:
+        settings: "{{ item }}"
+      loop: "{{ settings | default([]) }}"
 
     - name: "Ensure credentials"
       awx.awx.tower_credential:
