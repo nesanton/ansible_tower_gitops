@@ -1,5 +1,5 @@
 ---
-credentials:
+tower_credentials:
   - name: git
     credential_type: Source Control
     organization: Default
@@ -7,7 +7,7 @@ credentials:
       username: ${GIT_USERNAME}
       password: ${GIT_PASSWORD}
     
-projects:
+tower_projects:
   - name: example_inventory_source_project
     organization: Default
     scm_clean: false
@@ -16,7 +16,7 @@ projects:
     credential: gitlab_tower_dev
     allow_override: false
 
-inventory_sources:
+tower_inventory_sources:
   - name: example_inventory_source
     source: scm
     source_path: inventory.ini
@@ -27,13 +27,8 @@ inventory_sources:
     update_on_launch: false
     update_on_project_update: true
 
-inventories:
+tower_inventories:
   - name: example_inventory
     organization: Default
     instance_groups: []
-
-update_settings:
-  wait: true
-  interval: 5
-  timeout: 10
 ...

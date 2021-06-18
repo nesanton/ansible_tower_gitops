@@ -14,6 +14,8 @@
         dir: "tower_objects.d"
       failed_when: false
 
+    #TODO replace the below tasks with tower_configuration collection
+
     - name: "Ensure subscription"
       awx.awx.tower_license:
         manifest: "{{ subscription.manifest | default(omit) }}"
