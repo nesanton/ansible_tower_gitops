@@ -1,19 +1,30 @@
-ensure_tower_objects:
+controller_configuration:
   image: quay.io/anestero/cicd-ansible:v0.1
   variables:
-    HELPERS_REVISION: main
-    HELPERS_REPO: github.com/nesanton/ansible_tower_gitops.git
-    ANSIBLE_HOST_KEY_CHECKING: 'false'
+    GIT_USERNAME: ''                     # Override with GitLab's masked CICD vars
+    GIT_PASSWORD: ''                     # Override with GitLab's masked CICD vars
+    CONTROLLER_HOSTNAME: ''              # Override with GitLab's CICD vars
+    CONTROLLER_USERNAME: ''              # Override with GitLab's CICD vars
+    CONTROLLER_PASSWORD: ''              # Override with GitLab's CICD vars
+    CONTROLLER_VALIDATE_CERTS: ''        # Override with GitLab's CICD vars, defaults to true
+    CONTROLLER_COLLECTION_VARIANT: ''    # Override with GitLab's CICD vars, defaults to awx.awx
+    SCM_URL: $CI_PROJECT_URL
+    SCM_BRANCH: $CI_COMMIT_BRANCH
     ANSIBLE_FORCE_COLOR: 'true'
+    ANSIBLE_HOST_KEY_CHECKING: 'false'
   before_script:
-    - git clone https://${HELPERS_TOKEN}@${HELPERS_REPO} helpers
-    - cd helpers && git checkout ${HELPERS_REVISION} && cd ..
-    - mv helpers/* ./ && rm -rf helpers
     - mkdir ~/.ssh
     - chmod 700 ~/.ssh
-    # Inject secrets from GitLab CI/CD vars
-    - cat tower_objects.yml | envsubst > tower_objects.tmp && mv tower_objects.tmp tower_objects.yml
+    # Inject values from GitLab CI/CD vars
+    - mkdir configs
+    - for f in controller_configs.yml controller_configs.d/*; do [[ -f ${f} ]] && cat ${f} | envsubst > configs/${f}; done
   script:
-    - ansible-playbook ensure_tower_objects.yml
-
+    # For ansible 2.11+ 
+    # https://docs.ansible.com/ansible/latest/user_guide/collections_using.html#using-a-playbook-from-a-collection
+    #
+    # - ansible-playbook redhat_cop.controller_configuration.configure_controller
+    #
+    # For older ansible versions
+    #
+    - ansible-playbook ~/.ansible/collections/ansible_collections/redhat_cop/controller_configuration/playbooks/configure_controller.yml
 

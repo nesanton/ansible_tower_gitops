@@ -1,22 +1,25 @@
 ---
-tower_credentials:
-  - name: git
+controller_credentials:
+  - name: git_auth
     credential_type: Source Control
     organization: Default
     inputs:
       username: ${GIT_USERNAME}
       password: ${GIT_PASSWORD}
     
-tower_projects:
+controller_projects:
   - name: example_inventory_source_project
     organization: Default
+    scm_url: ${SCM_URL}
+    scm_branch: ${SCM_BRANCH}
+    scm_type: git
     scm_clean: false
     scm_delete_on_update: false
     scm_update_on_launch: true
-    credential: gitlab_tower_dev
+    credential: git_auth
     allow_override: false
 
-tower_inventory_sources:
+controller_inventory_sources:
   - name: example_inventory_source
     source: scm
     source_path: inventory.ini
@@ -27,8 +30,9 @@ tower_inventory_sources:
     update_on_launch: false
     update_on_project_update: true
 
-tower_inventories:
+controller_inventories:
   - name: example_inventory
     organization: Default
     instance_groups: []
 ...
+
