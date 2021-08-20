@@ -1,0 +1,5 @@
+---
+include:
+  - project: 'cicd-templates' # Should be a repo, but here it's a folder in the root
+    ref: main
+    file: 'controller-configuration.gitlab-ci.yml'

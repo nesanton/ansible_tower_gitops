@@ -1,0 +1,29 @@
+---
+controller_projects:
+  - name: my_job_template_project
+    description: "Created automatically via ${CI_PIPELINE_URL}"
+    organization: org-1
+    scm_clean: false
+    scm_url: ${CI_PROJECT_URL}
+    scm_branch: ${CI_COMMIT_BRANCH}
+    scm_type: git
+    scm_delete_on_update: false
+    scm_update_on_launch: true
+    scm_credential: gitlab_auth
+    allow_override: false
+
+controller_templates:
+  - name: my_job_template
+    job_type: run
+    organization: org-1
+    ask_inventory_on_launch: true
+    project: my_job_template_project
+    playbook: playbook.yml
+    credentials: []
+
+controller_schedules:
+  - name: Demo Schedule
+    description: "Created automatically via ${CI_PIPELINE_URL}"
+    unified_job_template: my_job_template
+    inventory: inventory_1
+    rrule: "DTSTART:20191219T130551Z RRULE:FREQ=DAILY;INTERVAL=1;COUNT=1"

@@ -1,7 +1,7 @@
 ---  
 controller_projects:
   - name: example_inventory_source_project
-    organization: Default
+    organization: org-1
     scm_url: ${SCM_URL}
     scm_branch: ${SCM_BRANCH}
     scm_type: git
@@ -24,7 +24,7 @@ controller_inventory_sources:
 
 controller_inventories:
   - name: example_inventory
-    organization: Default
+    organization: org-1
     instance_groups: []
 ...
 
