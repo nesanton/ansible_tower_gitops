@@ -1,0 +1,52 @@
+---
+# yamllint disable rule:line-length
+image: quay.io/anestero/cicd-ansible:latest
+
+stages:
+  - lint
+  - controller_configuration
+
+
+lint:
+  interruptible: true
+  stage: lint
+  rules:
+    # Run for detached Merge Request pipelines
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    # Run on non-default branches, e.g. feature- fix- or devel- branches
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: always
+  script:
+    - yamllint $(find . -name '*.y*ml'| xargs)
+
+
+controller_configuration:
+  stage: controller_configuration
+  rules:
+    # Do not run for Merge Requests
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    # Make real changes on the Controller only via default branch
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: always
+  variables:
+    GIT_USERNAME: ''                 # Override with GitLab's masked/protected CICD vars
+    GIT_PASSWORD: ''                 # Override with GitLab's masked/protected CICD vars
+    CONTROLLER_HOST: ''              # Override with GitLab's CICD vars
+    CONTROLLER_USERNAME: ''          # Override with GitLab's CICD masked/protected vars
+    CONTROLLER_PASSWORD: ''          # Override with GitLab's CICD masked/protected vars
+    CONTROLLER_VERIFY_SSL: ''        # Override with GitLab's CICD vars, defaults to true
+    ANSIBLE_FORCE_COLOR: 'true'
+    ANSIBLE_HOST_KEY_CHECKING: 'false'
+  before_script:
+    - mkdir ~/.ssh
+    - chmod 700 ~/.ssh
+    # Inject values from GitLab CI/CD vars
+    - mkdir -p configs/controller_configs.d
+    - for f in controller_configs.yml controller_configs.d/*; do [[ -f ${f} ]] && cat ${f} | envsubst > configs/${f}; done
+    - export CONTROLLER_CONFIGS_DIR=${PWD}/configs
+  script:
+    - ansible-playbook /home/ansible/configure_controller.yml
+
+# yamllint enable rule:line-length

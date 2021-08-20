@@ -1,0 +1,10 @@
+---
+- name: Nothing happens here
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+
+    - name: Do nothing
+      debug:
+        msg: Doing absolutely nothing
