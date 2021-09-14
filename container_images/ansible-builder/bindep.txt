@@ -1,0 +1,4 @@
+jq [platform:rpm]
+hostname [platform:rpm]
+rsync [platform:rpm]
+

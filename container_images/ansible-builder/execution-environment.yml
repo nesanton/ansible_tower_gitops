@@ -1,0 +1,24 @@
+---
+version: 1.0
+
+# build_arg_defaults:
+  # EE_BASE_IMAGE:
+
+# ansible_config: 'ansible.cfg'
+
+dependencies:
+  galaxy: requirements.yml
+  python: requirements.txt
+  system: bindep.txt
+
+additional_build_steps:
+  prepend: |
+    RUN pip3 install --upgrade pip setuptools
+  append: |
+    RUN sed -i 's/ansible.controller/awx.awx/' /usr/share/ansible/collections/ansible_collections/redhat_cop/controller_configuration/playbooks/configure_controller.yml
+    RUN useradd ansible -u 10001 -g 0
+    RUN chgrp 0 /home/ansible
+    RUN chmod -R 0775 /home/ansible
+    USER ansible
+    WORKDIR /home/ansible
+
