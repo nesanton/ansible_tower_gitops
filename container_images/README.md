@@ -2,7 +2,7 @@
 
 These images were tested with GitLab CI.
 
-Built images are hosted at [quay.io/anestero/cicd-ansible](quay.io/anestero/cicd-ansible)
+Built images are hosted at [quay.io/anestero/cicd-ansible](https://quay.io/anestero/cicd-ansible)
 
 # Buildah
 
