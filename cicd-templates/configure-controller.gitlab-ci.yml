@@ -1,6 +1,10 @@
 ---
 # yamllint disable rule:line-length
-image: quay.io/anestero/cicd-ansible:latest
+
+image: quay.io/anestero/cicd-ansible:ansible29-latest
+# For newer versions of AWX/AAP use the latest (ansible 2.11) image
+# image: quay.io/anestero/cicd-ansible:latest
+
 
 stages:
   - lint
@@ -43,10 +47,17 @@ controller_configuration:
     - mkdir ~/.ssh
     - chmod 700 ~/.ssh
     # Inject values from GitLab CI/CD vars
-    - mkdir -p configs/controller_configs.d
-    - for f in controller_configs.yml controller_configs.d/*; do [[ -f ${f} ]] && cat ${f} | envsubst > configs/${f}; done
+    - mkdir -p /tmp/configs/controller_configs.d ./configs
+    - for f in controller_configs.yml controller_configs.d/*; do [[ -f ${f} ]] && cat ${f} | envsubst > /tmp/configs/${f}; done
+    # Merge all configs into one file
+    # in case the same assets appear in different files
+    # e.g. "controller_settings" for ldap and jobs are in ldap_settings.yml and jobs_settings.yml
+    - yaml-merge $(find /tmp/configs -type f --output configs/merged_config.yml)
     - export CONTROLLER_CONFIGS_DIR=${PWD}/configs
   script:
-    - ansible-playbook /home/ansible/configure_controller.yml
+    - ansible-playbook ~/.ansible/collections/ansible_collections/redhat_cop/controller_configuration/playbooks/configure_controller.yml
+    # For newer versions of AWX/AAP that run ansible 2.11 call the playbook from its namespace
+    # - ansible-playbook redhat_cop.controller_configuration.configure_controller
+
 
 # yamllint enable rule:line-length
