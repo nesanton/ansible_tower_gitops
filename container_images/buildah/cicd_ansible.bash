@@ -2,7 +2,7 @@
 
 IMAGE=cicd-ansible
 ANSIBLE_VERSION= #">=2.9,<2.10" # leave empty for latest
-VERSION=v1.0
+VERSION=v1.1
 
 container=$(buildah from registry.access.redhat.com/ubi8:latest)
 buildah run -- ${container} dnf install git python3-pip jq hostname rsync -y --setopt=install_weak_deps --setopt=tsflags=nodocs --setopt=override_install_langs=en_US.utf8
@@ -55,3 +55,6 @@ buildah commit ${container} ${IMAGE}:${VERSION}
 #   NOTE: 2.0.0-1 is not labeled as latest for some reason
 # * replace Red Hat ansible.controller collection with upstream awx.awx inside the configure_controller playbook
 #
+# v1.1
+# * refresh software
+
