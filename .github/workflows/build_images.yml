@@ -28,8 +28,7 @@ jobs:
 
       - name: Source vars
         run: |
-          cat ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash | grep -Po '\K^[A-Z_]*\=.*' | sed 's/^/export /' > /tmp/vars
-          source /tmp/vars
+          cat ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash | grep -Po '\K^[A-Z_]*\=.*' | cut -d'#' -f1 >> ${GITHUB_ENV}
 
       - name: Build the image
         run: bash ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash
