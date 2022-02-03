@@ -1,0 +1,47 @@
+name: Build images
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+  IMAGE_REGISTRY: quay.io
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to Quay.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+    
+      - name: Checkout the Repo
+        uses: actions/checkout@v2
+
+      - name: source vars
+        run: |
+          cat cicd_ansible.bash | grep -Po '\K^[A-Z_]*\=.*' | sed 's/^/export /' > /tmp/vars
+          source /tmp/vars
+
+      - name: Build the image
+        run: bash ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash
+
+      - name: Push To quay.io
+        id: push-to-quay
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${IMAGE}
+          tags: ${VERSION} latest
+          registry: quay.io/anestero/
+
+      - name: Print image url
+        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
