@@ -28,6 +28,7 @@ buildah run --user 10001:0 -- ${container} sed -i 's/ansible.controller/awx.awx/
 buildah config --cmd '/bin/bash' ${container} 
 
 buildah commit ${container} ${IMAGE}:${VERSION}
+buildah tag ${IMAGE}:${VERSION} ${IMAGE}:${latest}
 
 
 # Container image that can lint and run ansible playbooks.
