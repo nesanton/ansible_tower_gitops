@@ -43,9 +43,12 @@ jobs:
       - name: Push to quay.io
         id: push-to-quay
         uses: redhat-actions/push-to-registry@v2
+        env:
+          IMAGE_NAME: ${IMAGE}
+          IMAGE_VERSION: ${VERSION}
         with:
-          image: ${IMAGE}
-          tags: ${VERSION} latest
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_VERSION }} latest
           registry: quay.io/anestero/
 
       - name: Print image url
