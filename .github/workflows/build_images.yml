@@ -7,20 +7,19 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
-  IMAGE_REGISTRY: quay.io
-  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
 
     steps:
       - name: Log in to Quay.io
+        env:
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          IMAGE_REGISTRY: quay.io
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         uses: redhat-actions/podman-login@v1
         with:
-          username: ${{ secrets.REGISTRY_USER }}
+          username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
           registry: ${{ env.IMAGE_REGISTRY }}
     
