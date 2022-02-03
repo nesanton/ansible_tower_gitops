@@ -38,6 +38,8 @@ jobs:
         run: |
           podman images
           buildah images
+          echo $IMAGE
+          echo $VERSION
 
       - name: Push to quay.io
         id: push-to-quay
