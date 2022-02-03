@@ -26,15 +26,15 @@ jobs:
       - name: Checkout the Repo
         uses: actions/checkout@v2
 
-      - name: source vars
+      - name: Source vars
         run: |
-          cat cicd_ansible.bash | grep -Po '\K^[A-Z_]*\=.*' | sed 's/^/export /' > /tmp/vars
+          cat ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash | grep -Po '\K^[A-Z_]*\=.*' | sed 's/^/export /' > /tmp/vars
           source /tmp/vars
 
       - name: Build the image
         run: bash ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash
 
-      - name: Push To quay.io
+      - name: Push to quay.io
         id: push-to-quay
         uses: redhat-actions/push-to-registry@v2
         with:
