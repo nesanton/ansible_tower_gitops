@@ -32,13 +32,6 @@ jobs:
 
       - name: Build the image
         run: bash ${GITHUB_WORKSPACE}/container_images/buildah/cicd_ansible.bash
-        
-      - name: debug image names
-        run: |
-          podman images
-          buildah images
-          echo $IMAGE
-          echo $VERSION
 
       - name: Push to quay.io
         id: push-to-quay
